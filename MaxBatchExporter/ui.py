@@ -1,6 +1,7 @@
 # Import PySide2
-from PySide2.QtWidgets import QWidget, QDialog, QLabel, QVBoxLayout, QPushButton, QDockWidget
-from PySide2 import QtCore
+from PySide2.QtCore import *
+from PySide2.QtGui import *
+from PySide2.QtWidgets import *
 import qtmax
 from pymxs import runtime as rt
 
@@ -10,31 +11,48 @@ import os, sys
 dir = os.path.dirname(os.path.realpath(__file__))
 sys.path += [dir]
 
-#from .Graphics import makePyramidMesh # Relative to package
-from Graphics import makePyramidMesh
+import Export
+import importlib
+importlib.reload(Export)
 
 #MAIN_WINDOW = QWidget.find(rt.windows.getMAXHWND())
 MAIN_WINDOW = qtmax.GetQMaxMainWindow()
 
+
 class PyMaxDialog(QDialog):
     def __init__(self, parent=QWidget.find(rt.windows.getMAXHWND())):
         super(PyMaxDialog, self).__init__(parent)
-        self.setWindowFlags(QtCore.Qt.Tool)
         self.setWindowTitle("Max Batch Exporter")
+        self.setWindowIcon(QIcon(":/GameExporter/SavePreset_32"))
         self.initUI()
-        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        self.setAttribute(Qt.WA_DeleteOnClose)
 
     def initUI(self):
-        mainLayout = QVBoxLayout()
-        
-        label = QLabel("Click button to create a pyramind in the scene")
-        mainLayout.addWidget(label)
+        layout = QVBoxLayout()
 
-        button = QPushButton("Pyramid")
-        button.clicked.connect(lambda: makePyramidMesh())
-        mainLayout.addWidget(button)
+        hbox = QHBoxLayout()
+        layout.addLayout(hbox)
 
-        self.setLayout(mainLayout)
+        """ Settings button """
+        settingsButton = QPushButton(
+            text="Settings",
+            toolTip="Open FBX settings",
+            icon=QIcon(":/Common/Settings_32")
+        )
+        settingsButton.clicked.connect(Export.openSettings)
+        settingsButton.setFixedWidth(32)
+        hbox.addWidget(settingsButton)
+
+        """ Export button """
+        exportButton = QPushButton(
+            text="Export",
+            toolTip="Batch process & export to individual files",
+            icon=QIcon(":/CommandPanel/Motion/BipedRollout/MotionMixer/BatchSave_32")
+        )
+        exportButton.clicked.connect(lambda: Export.batchExport([]))
+        hbox.addWidget(exportButton)
+
+        self.setLayout(layout)
         self.resize(250, 100)
 
 
