@@ -2,6 +2,8 @@
 from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
+
+# Import 3ds Max APIs
 import qtmax
 from pymxs import runtime as rt
 
@@ -12,8 +14,11 @@ dir = os.path.dirname(os.path.realpath(__file__))
 sys.path += [dir]
 
 import Export
+import ObjectTree
 import importlib
 importlib.reload(Export)
+importlib.reload(ObjectTree)
+
 
 #MAIN_WINDOW = QWidget.find(rt.windows.getMAXHWND())
 MAIN_WINDOW = qtmax.GetQMaxMainWindow()
@@ -29,6 +34,11 @@ class PyMaxDialog(QDialog):
 
     def initUI(self):
         layout = QVBoxLayout()
+
+        """ Object tree view """
+        objectTree = ObjectTree.ObjectTree()
+        objectTree.addObjects(rt.selection) # Default to the current selection
+        layout.addWidget(objectTree)
 
         hbox = QHBoxLayout()
         layout.addLayout(hbox)
@@ -53,7 +63,7 @@ class PyMaxDialog(QDialog):
         hbox.addWidget(exportButton)
 
         self.setLayout(layout)
-        self.resize(250, 100)
+        self.resize(350, 200)
 
 
 def show():
