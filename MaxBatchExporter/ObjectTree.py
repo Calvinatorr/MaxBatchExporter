@@ -3,8 +3,7 @@ from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
-# Import 3ds Max APIs
-import qtmax
+# Import 3ds Max libraries
 import pymxs
 from pymxs import runtime as rt
 
@@ -12,10 +11,14 @@ from dataclasses import dataclass
 import os, sys
 
 
-class ObjectTree(QTreeWidget):
+class ObjectTreeWidget(QTreeWidget):
     def __init__(self):
-        super(ObjectTree, self).__init__()
+        super(ObjectTreeWidget, self).__init__()
+        self.initUI()
 
+
+    """ Initialize the UI """
+    def initUI(self):
         # Styling
         self.setAlternatingRowColors(True)
         self.setSortingEnabled(True)

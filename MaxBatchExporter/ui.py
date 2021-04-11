@@ -3,7 +3,7 @@ from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
-# Import 3ds Max APIs
+# Import 3ds Max libraries
 import qtmax
 from pymxs import runtime as rt
 
@@ -14,10 +14,14 @@ dir = os.path.dirname(os.path.realpath(__file__))
 sys.path += [dir]
 
 import Export
+import ExportPath
 import ObjectTree
 import importlib
 importlib.reload(Export)
+importlib.reload(ExportPath)
 importlib.reload(ObjectTree)
+import Settings
+importlib.reload(Settings)
 
 
 #MAIN_WINDOW = QWidget.find(rt.windows.getMAXHWND())
@@ -34,16 +38,21 @@ class PyMaxDialog(QDialog):
 
     def initUI(self):
         layout = QVBoxLayout()
+        layout.setAlignment(Qt.AlignTop)
 
-        """ Object tree view """
-        objectTree = ObjectTree.ObjectTree()
+        # File path widget
+        filePath = ExportPath.ExportPathWidget()
+        layout.addWidget(filePath)
+
+        # Object tree view
+        objectTree = ObjectTree.ObjectTreeWidget()
         objectTree.addObjects(rt.selection) # Default to the current selection
         layout.addWidget(objectTree)
 
         hbox = QHBoxLayout()
         layout.addLayout(hbox)
 
-        """ Settings button """
+        # Settings button
         settingsButton = QPushButton(
             text="Settings",
             toolTip="Open FBX settings",
@@ -53,7 +62,7 @@ class PyMaxDialog(QDialog):
         settingsButton.setFixedWidth(32)
         hbox.addWidget(settingsButton)
 
-        """ Export button """
+        # Export button
         exportButton = QPushButton(
             text="Export",
             toolTip="Batch process & export to individual files",
@@ -63,7 +72,7 @@ class PyMaxDialog(QDialog):
         hbox.addWidget(exportButton)
 
         self.setLayout(layout)
-        self.resize(350, 200)
+        self.resize(400, 200)
 
 
 def show():
