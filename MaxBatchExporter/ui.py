@@ -14,10 +14,12 @@ dir = os.path.dirname(os.path.realpath(__file__))
 sys.path += [dir]
 
 import Export
+import ExportOptions
 import ExportPath
 import ObjectTree
 import importlib
 importlib.reload(Export)
+importlib.reload(ExportOptions)
 importlib.reload(ExportPath)
 importlib.reload(ObjectTree)
 import Settings
@@ -44,6 +46,10 @@ class PyMaxDialog(QDialog):
         filePath = ExportPath.ExportPathWidget()
         layout.addWidget(filePath)
 
+        # Options
+        exportOptions = ExportOptions.ExportOptionsWidget()
+        layout.addWidget(exportOptions)
+
         # Object tree view
         objectTree = ObjectTree.ObjectTreeWidget()
         objectTree.addObjects(rt.selection) # Default to the current selection
@@ -53,13 +59,12 @@ class PyMaxDialog(QDialog):
         layout.addLayout(hbox)
 
         # Settings button
-        settingsButton = QPushButton(
+        settingsButton = QToolButton(
             text="Settings",
             toolTip="Open FBX settings",
             icon=QIcon(":/Common/Settings_32")
         )
         settingsButton.clicked.connect(Export.openSettings)
-        settingsButton.setFixedWidth(32)
         hbox.addWidget(settingsButton)
 
         # Export button
@@ -73,6 +78,14 @@ class PyMaxDialog(QDialog):
 
         self.setLayout(layout)
         self.resize(400, 200)
+
+
+    def event(self, event):
+        if event.type() == QEvent.EnterWhatsThisMode:
+            QDesktopServices.openUrl(r"https://github.com/Calvinatorr/MaxBatchExporter/blob/main/README.md")
+            return True
+
+        return super(PyMaxDialog, self).event(event)
 
 
 def show():

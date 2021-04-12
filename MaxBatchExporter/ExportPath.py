@@ -32,12 +32,11 @@ class ExportPathWidget(QWidget):
         self.setLayout(layout)
 
         # Browse directory button
-        browseButton = QPushButton(
+        browseButton = QToolButton(
             text="Browse",
             toolTip="Browse for an export directory",
             icon=QIcon(":/CivilView/Open_48")
         )
-        browseButton.setFixedWidth(24)
         browseButton.clicked.connect(self._browseDirectory)
         layout.addWidget(browseButton)
 
