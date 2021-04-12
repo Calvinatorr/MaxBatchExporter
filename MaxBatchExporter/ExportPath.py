@@ -41,7 +41,9 @@ class ExportPathWidget(QWidget):
         layout.addWidget(browseButton)
 
         # Path widget
-        self._path = QTextEdit()
+        self._path = QLineEdit(
+            toolTip="Path to export our files to? Will be remembered by this .max file."
+        )
         self._path.setFixedHeight(24)
         layout.addWidget(self._path)
 

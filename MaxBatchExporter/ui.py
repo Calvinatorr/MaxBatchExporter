@@ -43,8 +43,8 @@ class PyMaxDialog(QDialog):
         layout.setAlignment(Qt.AlignTop)
 
         # File path widget
-        filePath = ExportPath.ExportPathWidget()
-        layout.addWidget(filePath)
+        exportPath = ExportPath.ExportPathWidget()
+        layout.addWidget(exportPath)
 
         # Options
         exportOptions = ExportOptions.ExportOptionsWidget()
