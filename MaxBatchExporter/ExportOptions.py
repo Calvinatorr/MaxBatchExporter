@@ -32,8 +32,6 @@ class ExportOptionsWidget(QWidget):
         hbox.addWidget(self._exportColliders)
 
 
-
-
     """ Export from the world origin? """
     def getWorldOrigin(self):
         return self._worldOrigin.isChecked()

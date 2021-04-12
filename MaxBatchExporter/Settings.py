@@ -62,9 +62,13 @@ class Settings(object):
 
         # Initialize the property
         if initProperty:
+            defaultPath = rt.maxFilePath
+            if len(defaultPath) <= 0:
+                defaultPath = rt.GetDir(rt.Name("scene"))
+
             # Default default
             self.data = {
-                "exportPath": rt.maxFilePath
+                "exportPath": defaultPath
             }
 
             # Now save

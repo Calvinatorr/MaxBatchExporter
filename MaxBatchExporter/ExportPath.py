@@ -12,6 +12,8 @@ import importlib
 importlib.reload(Settings)
 from Settings import *
 
+import os
+
 
 class ExportPathWidget(QWidget):
     def __init__(self):
@@ -53,7 +55,7 @@ class ExportPathWidget(QWidget):
 
 
     def getPath(self):
-        return self._path.toPlainText()
+        return os.path.realpath(self._path.text())
 
 
     def _browseDirectory(self):
@@ -70,4 +72,4 @@ class ExportPathWidget(QWidget):
 
         # Validate new directory
         if len(newDirectory) > 0:
-            self._path.setText(newDirectory)
+            self._path.setText(os.path.realpath(newDirectory))

@@ -43,17 +43,17 @@ class PyMaxDialog(QDialog):
         layout.setAlignment(Qt.AlignTop)
 
         # File path widget
-        exportPath = ExportPath.ExportPathWidget()
-        layout.addWidget(exportPath)
+        self.exportPath = ExportPath.ExportPathWidget()
+        layout.addWidget(self.exportPath)
 
         # Options
-        exportOptions = ExportOptions.ExportOptionsWidget()
-        layout.addWidget(exportOptions)
+        self.exportOptions = ExportOptions.ExportOptionsWidget()
+        layout.addWidget(self.exportOptions)
 
         # Object tree view
-        objectTree = ObjectTree.ObjectTreeWidget()
-        objectTree.addObjects(rt.selection) # Default to the current selection
-        layout.addWidget(objectTree)
+        self.objectTree = ObjectTree.ObjectTreeWidget()
+        self.objectTree.addObjects(rt.selection) # Default to the current selection
+        layout.addWidget(self.objectTree)
 
         hbox = QHBoxLayout()
         layout.addLayout(hbox)
@@ -73,9 +73,17 @@ class PyMaxDialog(QDialog):
             toolTip="Batch process & export to individual files",
             icon=QIcon(":/CommandPanel/Motion/BipedRollout/MotionMixer/BatchSave_32")
         )
-        exportButton.clicked.connect(lambda: Export.batchExport([]))
+        exportButton.clicked.connect(self._export)
         hbox.addWidget(exportButton)
 
+        # Progress bar
+        self._progressBar = QProgressBar(
+            textVisible=False
+        )
+        self._progressBar.setFixedHeight(12)
+        layout.addWidget(self._progressBar)
+
+        # Layout
         self.setLayout(layout)
         self.resize(400, 200)
 
@@ -86,6 +94,65 @@ class PyMaxDialog(QDialog):
             return True
 
         return super(PyMaxDialog, self).event(event)
+
+
+    """ Export files """
+    def _export(self):
+        objects = self.objectTree.getObjectsForExport()
+
+        # Nothing to export so pass
+        if len(objects) <= 0:
+            return
+
+        # Disable for performance
+        rt.disableSceneRedraw()
+        rt.suspendEditing()
+
+        # Cache selection
+        selectionCache = list(rt.selection) or []
+        rt.clearSelection()
+
+        path = self.exportPath.getPath()
+
+        # Export each root object
+        try:
+            for index in range(0, len(objects)):
+                o = objects[index]
+                time = float(index) / float(max(len(objects) - 1, 1))
+
+                # Generate pathname
+                filename = o.object.name
+                pathname = os.path.join(path, filename)
+
+                # Show progress
+                print("Exporting file '" + pathname + "'..")
+                self._progressBar.setValue(index * 100)
+
+                cachedPosition = o.object.pos
+                if self.exportOptions.getWorldOrigin():
+                    o.object.pos = rt.point3(0, 0, 0)
+
+                rt.select(o.object) # Select root object & clear others
+                for child in o.children:
+                    rt.selectMore(child)
+
+                rt.exportFile(pathname, rt.Name("noPrompt"), selectedOnly=True, using="FBXEXP")
+
+                # Reset position
+                if self.exportOptions.getWorldOrigin():
+                    o.object.pos = cachedPosition
+        except error as e:
+            print(e)
+
+        # Restore scene selection
+        rt.clearSelection()
+        rt.select(selectionCache)
+
+        # Re-enable
+        rt.resumeEditing()
+        rt.enableSceneRedraw()
+        rt.redrawViews()
+
 
 
 def show():
