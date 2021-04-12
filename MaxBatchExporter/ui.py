@@ -98,7 +98,7 @@ class PyMaxDialog(QDialog):
 
     """ Export files """
     def _export(self):
-        objects = self.objectTree.getObjectsForExport()
+        objects = self.objectTree.getObjectsForExport(self.exportOptions.getExportColliders(), self.exportOptions.getExportSockets())
 
         # Nothing to export so pass
         if len(objects) <= 0:
@@ -118,6 +118,8 @@ class PyMaxDialog(QDialog):
         try:
             for index in range(0, len(objects)):
                 o = objects[index]
+
+                # Time for progress
                 time = float(index) / float(max(len(objects) - 1, 1))
 
                 # Generate pathname
@@ -128,14 +130,17 @@ class PyMaxDialog(QDialog):
                 print("Exporting file '" + pathname + "'..")
                 self._progressBar.setValue(index * 100)
 
+                # Cache the object position
                 cachedPosition = o.object.pos
                 if self.exportOptions.getWorldOrigin():
                     o.object.pos = rt.point3(0, 0, 0)
 
-                rt.select(o.object) # Select root object & clear others
+                # Select root object & clear others
+                rt.select(o.object)
                 for child in o.children:
                     rt.selectMore(child)
 
+                # Export the file
                 rt.exportFile(pathname, rt.Name("noPrompt"), selectedOnly=True, using="FBXEXP")
 
                 # Reset position

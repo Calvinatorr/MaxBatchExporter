@@ -31,6 +31,14 @@ class ExportOptionsWidget(QWidget):
         )
         hbox.addWidget(self._exportColliders)
 
+        # Sockets
+        self._exportSockets = QCheckBox(
+            text="Export Sockets",
+            toolTip="Include sockets in export?",
+            checked=True
+        )
+        hbox.addWidget(self._exportSockets)
+
 
     """ Export from the world origin? """
     def getWorldOrigin(self):
@@ -40,3 +48,8 @@ class ExportOptionsWidget(QWidget):
     """ Include colliders in the export? """
     def getExportColliders(self):
         return self._exportColliders.isChecked()
+
+
+    """ Include sockets in the export? """
+    def getExportSockets(self):
+        return self._exportSockets.isChecked()

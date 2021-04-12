@@ -11,6 +11,35 @@ from dataclasses import dataclass
 import os, sys
 
 
+colliderTypes = [
+    "UBX",
+    "UCP",
+    "USP",
+    "UCX",
+]
+colours = {
+    "collider": QColor(148, 99, 0),
+    "socket": QColor(39, 112, 0),
+}
+
+def getColliderType(object: pymxs.MXSWrapperBase):
+    for colliderType in colliderTypes:
+        if colliderType in object.name:
+            return colliderType
+
+    # No collider type found
+    return None
+
+
+def isCollider(object: pymxs.MXSWrapperBase):
+    return getColliderType(object) is not None
+
+
+def isSocket(object: pymxs.MXSWrapperBase):
+    return "SOCKET" in object.name
+
+
+
 class ObjectTreeWidget(QTreeWidget):
     def __init__(self):
         super(ObjectTreeWidget, self).__init__()
@@ -111,6 +140,14 @@ class ObjectTreeWidget(QTreeWidget):
             str(object.inode.handle),
         ])
 
+        # Check if our object is a collider or a socket
+        if isCollider(object):
+            #item.setData(1, 0, 1)
+            item.setBackgroundColor(0, colours["collider"])
+        elif isSocket(object):
+            #item.setData(2, 0, 1)
+            item.setBackgroundColor(0, colours["socket"])
+
         # Assign icons
         @dataclass
         class IconAssociation:
@@ -175,9 +212,60 @@ class ObjectTreeWidget(QTreeWidget):
 
 
     """ Add list of pymxs objects """
-    def addObjects(self, objects: []):
+    def addObjects(self, objects: [], update=True):
         for obj in objects:
             self.addObject(obj)
+        if update:
+            self.update()
+
+
+    """ Get the pymxs object from our item """
+    def _getPymxsObjectFromItem(self, item):
+        data = item.data(self._handleColumnIndex, 0)
+        handle = int(data)
+        return rt.maxOps.getNodeByHandle(handle)
+
+
+    """ Update data """
+    def update(self):
+        def _processItem(item, counter: dict={}):
+            for childIndex in range(0, item.childCount()):
+                childItem = item.child(childIndex)
+                object = self._getPymxsObjectFromItem(childItem)
+
+                # Recursively search
+                _processItem(childItem, counter)
+
+                # Count up colliders & sockets
+                if isCollider(object):
+                    counter["colliders"] += 1
+                elif isSocket(object):
+                    counter["sockets"] += 1
+
+        # Process from top-level
+        rootItem = self.invisibleRootItem()
+        for childIndex in range(0, rootItem.childCount()):
+            childItem = rootItem.child(childIndex)
+
+            # Count sockets & colliders
+            counter = {
+                "colliders": 0,
+                "sockets": 0,
+            }
+            _processItem(childItem, counter)
+
+            # Set data
+            childItem.setData(1, 0, counter["colliders"] if counter["colliders"] > 0 else "")
+            childItem.setData(2, 0, counter["sockets"] if counter["sockets"] > 0 else "")
+
+            # Set colours conditionally
+            if counter["colliders"] > 0:
+                childItem.setBackgroundColor(1, colours["collider"])
+            if counter["sockets"] > 0:
+                childItem.setBackgroundColor(2, colours["socket"])
+
+        # Update sorting
+        self.sortItems(0, Qt.SortOrder.AscendingOrder)
 
 
     """ Find whether the object exists """
@@ -214,7 +302,7 @@ class ObjectTreeWidget(QTreeWidget):
 
 
     """ Get a list of objects to export """
-    def getObjectsForExport(self):
+    def getObjectsForExport(self, includeColliders=True, includeSockets=True):
         """ Get child objects from item as flattened list """
         def _getChildObjects(item, outChildren: []):
             for childIndex in range(0, item.childCount()):
@@ -224,7 +312,14 @@ class ObjectTreeWidget(QTreeWidget):
                 data = childItem.data(self._handleColumnIndex, 0)
                 handle = int(data)
                 object = rt.maxOps.getNodeByHandle(handle)
-                outChildren += [object]
+
+                # Check if we want to export this object
+                if includeColliders and isCollider(object):
+                    outChildren += [object]
+                elif includeSockets and isSocket(object):
+                    outChildren += [object]
+                else:
+                    outChildren += [object]
 
                 _getChildObjects(childItem, outChildren)
 
@@ -240,9 +335,7 @@ class ObjectTreeWidget(QTreeWidget):
             topLevelItem = rootItem.child(childIndex)
 
             # Get pymxs object
-            data = topLevelItem.data(self._handleColumnIndex, 0)
-            handle = int(data)
-            object = rt.maxOps.getNodeByHandle(handle)
+            object = self._getPymxsObjectFromItem(topLevelItem)
 
             # Add top level object
             obj = ObjectForExport(object=object)
