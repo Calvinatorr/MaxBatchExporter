@@ -23,7 +23,7 @@ class ExportPathWidget(QWidget):
 
         # Path changed hook
         def exportPathChanged():
-            Settings.instance().setExportPath(self._path.toPlainText())
+            Settings.instance().setExportPath(self._path.text())
             Settings.instance().saveSettings()
         self._path.textChanged.connect(exportPathChanged)
 

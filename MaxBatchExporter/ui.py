@@ -91,8 +91,7 @@ class PyMaxDialog(QDialog):
     def event(self, event):
         if event.type() == QEvent.EnterWhatsThisMode:
             QDesktopServices.openUrl(r"https://github.com/Calvinatorr/MaxBatchExporter/blob/main/README.md")
-            return True
-
+            QWhatsThis.leaveWhatsThisMode()
         return super(PyMaxDialog, self).event(event)
 
 
