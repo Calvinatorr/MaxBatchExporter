@@ -26,7 +26,6 @@ import Settings
 importlib.reload(Settings)
 
 
-#MAIN_WINDOW = QWidget.find(rt.windows.getMAXHWND())
 MAIN_WINDOW = qtmax.GetQMaxMainWindow()
 
 
@@ -64,7 +63,7 @@ class PyMaxDialog(QDialog):
             toolTip="Open FBX settings",
             icon=QIcon(":/Common/Settings_32")
         )
-        settingsButton.clicked.connect(Export.openSettings)
+        settingsButton.clicked.connect(lambda: rt.OpenFbxSetting())
         hbox.addWidget(settingsButton)
 
         # Export button
@@ -165,5 +164,5 @@ def show():
         dialog = PyMaxDialog(MAIN_WINDOW)
     dialog.show()
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     show()
